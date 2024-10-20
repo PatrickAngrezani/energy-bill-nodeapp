@@ -149,6 +149,7 @@ export const processEnergyBillPDF = async (
         dueDate: extractedData.dueDate,
         kwhConsuption: Number(extractedData.kwhConsuption),
         sceeeEnergy: Number(extractedData.sceeeEnergy),
+        eletricEnergyConsume: Number(extractedData.eletricEnergyConsume),
         compensatedEnergyQuantity: Number(
           extractedData.compensatedEnergyQuantity
         ),
