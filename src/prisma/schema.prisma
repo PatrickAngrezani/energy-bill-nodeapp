@@ -18,6 +18,7 @@ model Energy_Bill {
   sceeeEnergy                       Float
   eletricEnergyConsume              Float      @default(0)
   compensatedEnergyQuantity         Float
+  compensatedEnergyQuantityMoney    Float      @default(0)
   publicLightingContribuition       Float
   createdAt                         DateTime   @default(now())
 }

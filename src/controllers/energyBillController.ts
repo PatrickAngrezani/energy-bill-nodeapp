@@ -22,6 +22,7 @@ export const createEnergyBill = async (req: Request, res: Response) => {
     kwhConsuption,
     sceeeEnergy,
     compensatedEnergyQuantity,
+    compensatedEnergyQuantityMoney,
   } = req.body;
 
   try {
@@ -34,6 +35,7 @@ export const createEnergyBill = async (req: Request, res: Response) => {
         dueDate,
         kwhConsuption,
         compensatedEnergyQuantity,
+        compensatedEnergyQuantityMoney,
         publicLightingContribuition,
         sceeeEnergy,
       },
@@ -83,6 +85,7 @@ export const updateEnergyBill = async (req: Request, res: Response) => {
     kwhConsuption,
     sceeeEnergy,
     compensatedEnergyQuantity,
+    compensatedEnergyQuantityMoney,
   } = req.body;
 
   try {
@@ -96,6 +99,7 @@ export const updateEnergyBill = async (req: Request, res: Response) => {
         dueDate,
         kwhConsuption,
         compensatedEnergyQuantity,
+        compensatedEnergyQuantityMoney,
         publicLightingContribuition,
         sceeeEnergy,
       },
@@ -158,6 +162,7 @@ export const processEnergyBillPDF = async (
         compensatedEnergyQuantity: Number(
           extractedData.compensatedEnergyQuantity
         ),
+        compensatedEnergyQuantityMoney: Number(extractedData.compensatedEnergyMoney),
         publicLightingContribuition: Number(
           extractedData.publicLightingContribution
         ),

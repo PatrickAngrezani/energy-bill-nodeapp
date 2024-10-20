@@ -21,7 +21,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
 
     const eletricEnergyR$ = values[0];
     const sceeEnergyR$ = values[1];
-    const compensatedEnergyR$ = values[2];
+    const compensatedEnergyMoney = values[2];
 
     const accountNumber =
       extractedText.match(/Nº DO CLIENTE\s+Nº DA INSTALAÇÃO\s+(\d+)\s+/)?.[1] ||
@@ -54,7 +54,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     const totalValueNoGD = removeGDOnValue(
       eletricEnergyR$,
       sceeEnergyR$,
-      compensatedEnergyR$
+      Number(publicLightingContribution)
     );
 
     return {
@@ -67,6 +67,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       sceeeEnergy,
       eletricEnergyConsume,
       compensatedEnergyQuantity,
+      compensatedEnergyMoney,
       publicLightingContribution,
     };
   } catch (error) {
@@ -78,9 +79,9 @@ export const extractDataFromPDF = async (pdfPath: string) => {
 function removeGDOnValue(
   eletricEnergyR$: number,
   sceeEnergy: number,
-  compensatedEnergyR$: number
+  publicLightingContribution: number
 ): Number {
   const valueWithoutGD: number =
-    eletricEnergyR$ + sceeEnergy + compensatedEnergyR$;
+    eletricEnergyR$ + sceeEnergy + publicLightingContribution;
   return Number(valueWithoutGD.toFixed(2));
 }
