@@ -7,6 +7,21 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     const data = await pdfParse(dataBuffer);
 
     const extractedText = data.text;
+    const regex = /kWh\s+\S+\s+\S+\s+(-?\d+(?:,\d+)?)/g;
+
+    let match;
+    let values = [];
+
+    while ((match = regex.exec(extractedText)) !== null) {
+      const valor = match[1].replace(",", ".");
+      if (!isNaN(Number(valor))) {
+        values.push(Number(valor));
+      }
+    }
+
+    const eletricEnergyR$ = values[0];
+    const sceeEnergyR$ = values[1];
+    const compensatedEnergyR$ = values[2];
 
     const accountNumber =
       extractedText.match(/Nº DO CLIENTE\s+Nº DA INSTALAÇÃO\s+(\d+)\s+/)?.[1] ||
@@ -34,12 +49,19 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       ? `${dueDateMatch[3]}-${dueDateMatch[2]}-${dueDateMatch[1]}`
       : null;
     const totalValue = valueMatch ? valueMatch[1].replace(",", ".") : "0";
-    const eletricEnergyConsume = kwhConsuption + sceeeEnergy;
+    const eletricEnergyConsume = Number(kwhConsuption) + Number(sceeeEnergy);
+
+    const totalValueNoGD = removeGDOnValue(
+      eletricEnergyR$,
+      sceeEnergyR$,
+      compensatedEnergyR$
+    );
 
     return {
       accountNumber,
       month,
       totalValue,
+      totalValueNoGD,
       dueDate,
       kwhConsuption,
       sceeeEnergy,
@@ -52,3 +74,13 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     throw new Error("Error extracting data from PDF");
   }
 };
+
+function removeGDOnValue(
+  eletricEnergyR$: number,
+  sceeEnergy: number,
+  compensatedEnergyR$: number
+): Number {
+  const valueWithoutGD: number =
+    eletricEnergyR$ + sceeEnergy + compensatedEnergyR$;
+  return Number(valueWithoutGD.toFixed(2));
+}
