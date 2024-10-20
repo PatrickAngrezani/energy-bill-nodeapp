@@ -34,6 +34,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       ? `${dueDateMatch[3]}-${dueDateMatch[2]}-${dueDateMatch[1]}`
       : null;
     const totalValue = valueMatch ? valueMatch[1].replace(",", ".") : "0";
+    const eletricEnergyConsume = kwhConsuption + sceeeEnergy;
 
     return {
       accountNumber,
@@ -42,6 +43,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       dueDate,
       kwhConsuption,
       sceeeEnergy,
+      eletricEnergyConsume,
       compensatedEnergyQuantity,
       publicLightingContribution,
     };
