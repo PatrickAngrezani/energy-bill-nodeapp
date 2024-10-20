@@ -12,6 +12,7 @@ model Energy_Bill {
   accountNumber                     String
   month                             String
   totalValue                        Float
+  totalValueWithoutGD               Float      @default(0)
   dueDate                           String?
   kwhConsuption                     Float
   sceeeEnergy                       Float
