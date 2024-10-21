@@ -14,7 +14,7 @@ const upload = multer({ dest: "uploads/" });
 const router = Router();
 
 router.post("/energy-bill", createEnergyBill);
-router.get("/energy-bill", getEnergyBills);
+router.get("/energy-bills", getEnergyBills);
 router.get("/energy-bill/:id", getEnergyBillById);
 router.put("/energy-bill/:id", updateEnergyBill);
 router.delete("/energy-bill/:id", deleteEnergyBill);
