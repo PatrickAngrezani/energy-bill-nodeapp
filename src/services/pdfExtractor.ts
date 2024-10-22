@@ -7,13 +7,13 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     const data = await pdfParse(dataBuffer);
 
     const extractedText = data.text;
-    const regex = /kWh\s+\S+\s+\S+\s+(-?\d+(?:,\d+)?)/g;
+    const regex = /kWh\s+\S+\s+\S+\s+(-?\d{1,3}(?:\.\d{3})*,\d{2})/g;
 
     let match;
     let values = [];
 
     while ((match = regex.exec(extractedText)) !== null) {
-      const valor = match[1].replace(",", ".");
+      const valor = match[1].replace(/\./g, "").replace(",", ".");
       if (!isNaN(Number(valor))) {
         values.push(Number(valor));
       }
@@ -22,6 +22,8 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     const eletricEnergyR$ = values[0];
     const sceeEnergyR$ = values[1];
     const compensatedEnergyMoney = values[2];
+
+    const GDEconomyPositive = Math.abs(compensatedEnergyMoney);
 
     const accountNumber =
       extractedText.match(/Nº DO CLIENTE\s+Nº DA INSTALAÇÃO\s+(\d+)\s+/)?.[1] ||
@@ -37,13 +39,20 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     const kwhConsuption =
       extractedText.match(/Energia ElétricakWh\s+(\d+)/)?.[1] || "0";
     const sceeeEnergy =
-      extractedText.match(/Energia SCEE s\/ ICMSkWh\s+(\d+)/)?.[1] || "0";
+      extractedText.match(/Energia SCEE s\/ ICMSkWh\s+([\d.]+)/)?.[1] || "0";
     const compensatedEnergyQuantity =
-      extractedText.match(/Energia compensada GD IkWh\s+(\d+)/)?.[1] || "0";
+      extractedText.match(/Energia compensada GD IkWh\s+([\d.]+)/)?.[1] || "0";
     const publicLightingContribution =
       extractedText
         .match(/Contrib Ilum Publica Municipal\s+(\d+,\d+)/)?.[1]
         .replace(",", ".") || "0";
+
+    const parsedSceeeEnergy = parseFloat(
+      sceeeEnergy.replace(/\./g, "").replace(",", ".")
+    );
+    const parsedCompensatedEnergyQuantity = parseFloat(
+      compensatedEnergyQuantity.replace(/\./g, "").replace(",", ".")
+    );
 
     const dueDate = dueDateMatch
       ? `${dueDateMatch[3]}-${dueDateMatch[2]}-${dueDateMatch[1]}`
@@ -64,10 +73,10 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       totalValueNoGD,
       dueDate,
       kwhConsuption,
-      sceeeEnergy,
+      parsedSceeeEnergy,
       eletricEnergyConsume,
-      compensatedEnergyQuantity,
-      compensatedEnergyMoney,
+      parsedCompensatedEnergyQuantity,
+      GDEconomyPositive,
       publicLightingContribution,
     };
   } catch (error) {
