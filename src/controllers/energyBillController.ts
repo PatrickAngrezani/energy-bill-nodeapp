@@ -13,6 +13,7 @@ interface MulterRequest extends Request {
 
 export const createEnergyBill = async (req: Request, res: Response) => {
   const {
+    installationNumber,
     accountNumber,
     issueDate,
     publicLightingContribuition,
@@ -28,6 +29,7 @@ export const createEnergyBill = async (req: Request, res: Response) => {
   try {
     const newEnergyBill = await prisma.energy_Bill.create({
       data: {
+        installationNumber,
         accountNumber,
         month: String(new Date(issueDate)),
         totalValue,
@@ -152,6 +154,7 @@ export const processEnergyBillPDF = async (
 
     const newEnergyBill = await prisma.energy_Bill.create({
       data: {
+        installationNumber: Number(extractedData.installationNumber),
         accountNumber: extractedData.accountNumber,
         month: extractedData.month,
         totalValue: Number(extractedData.totalValue),

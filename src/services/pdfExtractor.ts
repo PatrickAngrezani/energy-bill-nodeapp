@@ -47,6 +47,14 @@ export const extractDataFromPDF = async (pdfPath: string) => {
         .match(/Contrib Ilum Publica Municipal\s+(\d+,\d+)/)?.[1]
         .replace(",", ".") || "0";
 
+    let installationNumber;
+    const installationNumberMatch = extractedText.match(
+      /(?:\d{10})\s+(\d{10})/
+    );
+    if (installationNumberMatch !== null) {
+      installationNumber = installationNumberMatch[1];
+    }
+
     const parsedSceeeEnergy = parseFloat(
       sceeeEnergy.replace(/\./g, "").replace(",", ".")
     );
@@ -67,6 +75,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     );
 
     return {
+      installationNumber,
       accountNumber,
       month,
       totalValue,
