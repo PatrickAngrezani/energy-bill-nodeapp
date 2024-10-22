@@ -75,10 +75,12 @@ export const extractDataFromPDF = async (pdfPath: string) => {
     );
 
     const ucName = getUCName(extractedText);
+    const distributor = getDistributorName(extractedText);
 
     return {
       ucName,
       installationNumber,
+      distributor,
       accountNumber,
       month,
       totalValue,
@@ -112,4 +114,12 @@ function getUCName(extractedText: String) {
   const ucName = lines[37].trim();
 
   return ucName;
+}
+function getDistributorName(extractedText: string) {
+  const lines = extractedText.split("\n");
+  const distributorLine = lines[63].trim();
+
+  const distributor = distributorLine.split("CNPJ")[0].trim();
+
+  return distributor;
 }

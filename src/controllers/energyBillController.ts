@@ -15,6 +15,7 @@ export const createEnergyBill = async (req: Request, res: Response) => {
   const {
     ucName,
     installationNumber,
+    distributor,
     accountNumber,
     issueDate,
     publicLightingContribuition,
@@ -32,6 +33,7 @@ export const createEnergyBill = async (req: Request, res: Response) => {
       data: {
         ucName,
         installationNumber,
+        distributor,
         accountNumber,
         month: String(new Date(issueDate)),
         totalValue,
@@ -93,6 +95,7 @@ export const updateEnergyBill = async (req: Request, res: Response) => {
   const {
     ucName,
     accountNumber,
+    distributor,
     issueDate,
     publicLightingContribuition,
     totalValue,
@@ -110,6 +113,7 @@ export const updateEnergyBill = async (req: Request, res: Response) => {
       data: {
         ucName,
         accountNumber,
+        distributor,
         month: String(new Date(issueDate)),
         totalValue,
         totalValueWithoutGD,
@@ -170,6 +174,7 @@ export const processEnergyBillPDF = async (
       data: {
         ucName: extractedData.ucName,
         installationNumber: Number(extractedData.installationNumber),
+        distributor: extractedData.distributor,
         accountNumber: extractedData.accountNumber,
         month: extractedData.month,
         totalValue: Number(extractedData.totalValue),
