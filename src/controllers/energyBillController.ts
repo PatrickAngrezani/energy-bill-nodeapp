@@ -83,7 +83,7 @@ export const getEnergyBillById = async (req: Request, res: Response) => {
 
     const formattedBill = {
       ...energyBill,
-      installationNumber: energyBill?.installationNumber?.toString(), // Convertendo BigInt para string
+      installationNumber: energyBill?.installationNumber?.toString(),
     };
 
     res.json(formattedBill);
@@ -209,5 +209,37 @@ export const processEnergyBillPDF = async (
   } catch (error) {
     console.error("Error extracting data fron PDF:", error);
     throw new Error("Error extracting data from PDF");
+  }
+};
+
+export const getFilteredBills = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { clientNumber, month, year } = req.query;
+
+  try {
+    const filteredBills = await prisma.energy_Bill.findMany({
+      where: {
+        accountNumber: String(clientNumber),
+        month: String(month),
+        year: Number(year),
+      },
+    });
+
+    if (filteredBills.length === 0) {
+      res.status(404).json({ error: "No found Invoices" });
+      return;
+    }
+
+    const formattedBills = filteredBills.map((bill) => ({
+      ...bill,
+      installationNumber: bill.installationNumber?.toString(),
+    }));
+
+    res.json({ energyBills: formattedBills });
+  } catch (error) {
+    console.error("Error getting invoices:", error);
+    res.status(500).json({ error: "Error getting invoices" });
   }
 };
