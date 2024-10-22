@@ -53,7 +53,12 @@ export const getEnergyBills = async (req: Request, res: Response) => {
   try {
     const energyBills = await prisma.energy_Bill.findMany();
 
-    res.json(energyBills);
+    const formattedBills = energyBills.map((bill) => ({
+      ...bill,
+      installationNumber: bill.installationNumber?.toString(),
+    }));
+
+    res.json({ energyBills: formattedBills });
   } catch (error) {
     console.error("Error fetching energy bills:", error);
     res.status(500).json({ error: "Error fetching the invoices" });
@@ -70,7 +75,12 @@ export const getEnergyBillById = async (req: Request, res: Response) => {
 
     if (!energyBill) res.status(404).json({ error: "Energy bill not found" });
 
-    res.json(energyBill);
+    const formattedBill = {
+      ...energyBill,
+      installationNumber: energyBill?.installationNumber?.toString(), // Convertendo BigInt para string
+    };
+
+    res.json(formattedBill);
   } catch (error) {
     res.status(500).json({ error: "Error fetching the invoice" });
   }
@@ -175,7 +185,12 @@ export const processEnergyBillPDF = async (
 
     fs.unlinkSync(pdfPath);
 
-    res.status(201).json(newEnergyBill);
+    const formattedBill = {
+      ...newEnergyBill,
+      installationNumber: newEnergyBill.installationNumber?.toString(),
+    };
+
+    res.status(201).json(formattedBill);
   } catch (error) {
     console.error("Error extracting data fron PDF:", error);
     throw new Error("Error extracting data from PDF");
