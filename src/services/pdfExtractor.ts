@@ -32,6 +32,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       extractedText.match(
         /Referente a\s+Vencimento\s+Valor a pagar \(R\$\)\s+([A-Z]{3}\/\d{4})/
       )?.[1] || "Unknown";
+    const year = month.split("/")[1];
     const valueMatch = extractedText.match(/\d{2}\/\d{2}\/\d{4}\s+(\d+,\d{2})/);
     const dueDateMatch = extractedText.match(
       /[A-Z]{3}\/\d{4}\s+(\d{2})\/(\d{2})\/(\d{4})/
@@ -83,6 +84,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       distributor,
       accountNumber,
       month,
+      year,
       totalValue,
       totalValueNoGD,
       dueDate,
