@@ -9,6 +9,7 @@ datasource db {
 
 model Energy_Bill {
   id                                Int        @id @default(autoincrement())
+  ucName                            String
   installationNumber                BigInt     
   accountNumber                     String
   month                             String

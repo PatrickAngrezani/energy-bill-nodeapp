@@ -74,7 +74,10 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       Number(publicLightingContribution)
     );
 
+    const ucName = getUCName(extractedText);
+
     return {
+      ucName,
       installationNumber,
       accountNumber,
       month,
@@ -102,4 +105,11 @@ function removeGDOnValue(
   const valueWithoutGD: number =
     eletricEnergyR$ + sceeEnergy + publicLightingContribution;
   return Number(valueWithoutGD.toFixed(2));
+}
+
+function getUCName(extractedText: String) {
+  const lines = extractedText.split("\n");
+  const ucName = lines[37].trim();
+
+  return ucName;
 }
