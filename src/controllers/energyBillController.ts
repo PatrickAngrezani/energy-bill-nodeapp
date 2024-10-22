@@ -53,6 +53,7 @@ export const getEnergyBills = async (req: Request, res: Response) => {
 
     res.json(energyBills);
   } catch (error) {
+    console.error("Error fetching energy bills:", error);
     res.status(500).json({ error: "Error fetching the invoices" });
   }
 };
@@ -157,12 +158,12 @@ export const processEnergyBillPDF = async (
         totalValueWithoutGD: Number(extractedData.totalValueNoGD),
         dueDate: extractedData.dueDate,
         kwhConsuption: Number(extractedData.kwhConsuption),
-        sceeeEnergy: Number(extractedData.sceeeEnergy),
+        sceeeEnergy: Number(extractedData.parsedSceeeEnergy),
         eletricEnergyConsume: Number(extractedData.eletricEnergyConsume),
         compensatedEnergyQuantity: Number(
-          extractedData.compensatedEnergyQuantity
+          extractedData.parsedCompensatedEnergyQuantity
         ),
-        compensatedEnergyQuantityMoney: Number(extractedData.compensatedEnergyMoney),
+        compensatedEnergyQuantityMoney: Number(extractedData.GDEconomyPositive),
         publicLightingContribuition: Number(
           extractedData.publicLightingContribution
         ),
