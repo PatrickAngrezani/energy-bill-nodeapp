@@ -4,8 +4,13 @@ import path from "path";
 import fs from "fs";
 import { extractDataFromPDF } from "../services/pdfExtractor";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const prisma = new PrismaClient();
+const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -160,6 +165,25 @@ export const deleteEnergyBill = async (
   }
 };
 
+const uploadToS3 = async (filePath: string, fileName: string) => {
+  const fileStream = fs.createReadStream(filePath);
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName,
+    Body: fileStream,
+    ContentType: "application/pdf",
+  };
+
+  try {
+    const command = new PutObjectCommand(uploadParams);
+    const data = await s3.send(command);
+    return data;
+  } catch (err) {
+    console.error("Error uploading to S3:", err);
+    throw err;
+  }
+};
+
 export const processEnergyBillPDF = async (
   req: MulterRequest,
   res: Response
@@ -173,6 +197,9 @@ export const processEnergyBillPDF = async (
 
   try {
     const extractedData = await extractDataFromPDF(pdfPath);
+
+    const fileName = `invoices/${req.file.filename}`;
+    await uploadToS3(pdfPath, fileName);
 
     const newEnergyBill = await prisma.energy_Bill.create({
       data: {
@@ -195,6 +222,7 @@ export const processEnergyBillPDF = async (
         publicLightingContribuition: Number(
           extractedData.publicLightingContribution
         ),
+        s3Url: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`,
       },
     });
 
