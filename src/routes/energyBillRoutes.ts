@@ -7,6 +7,7 @@ import {
   deleteEnergyBill,
   processEnergyBillPDF,
   getFilteredBills,
+  downloadEnergyBill,
 } from "../controllers/energyBillController";
 import multer from "multer";
 
@@ -17,9 +18,14 @@ const router = Router();
 router.post("/energy-bill", createEnergyBill);
 router.get("/energy-bills", getEnergyBills);
 router.get("/energy-bill/:id", getEnergyBillById);
-router.get("/energy-bill", getFilteredBills); 
+router.get("/energy-bill", getFilteredBills);
 router.put("/energy-bill/:id", updateEnergyBill);
 router.delete("/energy-bill/:id", deleteEnergyBill);
-router.post("/energy-bill/upload-pdf", upload.single("pdf"), processEnergyBillPDF);
+router.post(
+  "/energy-bill/upload-pdf",
+  upload.single("pdf"),
+  processEnergyBillPDF
+);
+router.get("/invoice/download", downloadEnergyBill);
 
 export default router;

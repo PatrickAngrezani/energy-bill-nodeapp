@@ -4,8 +4,13 @@ import path from "path";
 import fs from "fs";
 import { extractDataFromPDF } from "../services/pdfExtractor";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
+import { Readable } from "stream";
 
 dotenv.config();
 
@@ -197,8 +202,9 @@ export const processEnergyBillPDF = async (
 
   try {
     const extractedData = await extractDataFromPDF(pdfPath);
+    const month = extractedData.month.split("/")[0];
 
-    const fileName = `invoices/${req.file.filename}`;
+    const fileName = `invoices/${extractedData.installationNumber}-${month}-${extractedData.year}.pdf`;
     await uploadToS3(pdfPath, fileName);
 
     const newEnergyBill = await prisma.energy_Bill.create({
@@ -207,7 +213,7 @@ export const processEnergyBillPDF = async (
         installationNumber: Number(extractedData.installationNumber),
         distributor: extractedData.distributor,
         accountNumber: extractedData.accountNumber,
-        month: extractedData.month,
+        month,
         year: Number(extractedData.year),
         totalValue: Number(extractedData.totalValue),
         totalValueWithoutGD: Number(extractedData.totalValueNoGD),
@@ -269,5 +275,51 @@ export const getFilteredBills = async (
   } catch (error) {
     console.error("Error getting invoices:", error);
     res.status(500).json({ error: "Error getting invoices" });
+  }
+};
+
+export const downloadEnergyBill = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { clientNumber, month, year } = req.query;
+
+  try {
+    const invoice = await prisma.energy_Bill.findFirst({
+      where: {
+        accountNumber: String(clientNumber),
+        month: String(month),
+        year: Number(year),
+      },
+    });
+
+    if (!invoice) {
+      res.status(404).json({ error: "Energy bill not found" });
+      return;
+    }
+
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: `invoices/${invoice.installationNumber}-${month}-${year}.pdf`,
+    };
+
+    const command = new GetObjectCommand(params);
+    const data = await s3.send(command);
+
+    if (data.Body) {
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="Invoice-${clientNumber}-${month}-${year}.pdf"`
+      );
+      res.setHeader("Content-Type", "application/pdf");
+
+      const stream = data.Body as Readable;
+      stream.pipe(res);
+    } else {
+      res.status(404).json({ error: "File not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching file from S3:", error);
+    res.status(500).json({ error: "Error downloading the file" });
   }
 };
