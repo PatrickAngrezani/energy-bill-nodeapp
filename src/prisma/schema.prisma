@@ -24,5 +24,6 @@ model Energy_Bill {
   compensatedEnergyQuantity         Float
   compensatedEnergyQuantityMoney    Float      @default(0)
   publicLightingContribuition       Float
+  s3Url                             String     @default("")
   createdAt                         DateTime   @default(now())
 }
