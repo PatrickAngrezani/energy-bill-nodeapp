@@ -11,6 +11,7 @@ import {
 } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 import { Readable } from "stream";
+import { ParsedQs } from "qs";
 
 dotenv.config();
 
@@ -253,12 +254,11 @@ export const getFilteredBills = async (
   const { clientNumber, month, year } = req.query;
 
   try {
+    let where;
+    where = verifyParams(clientNumber, month, year, where);
+
     const filteredBills = await prisma.energy_Bill.findMany({
-      where: {
-        accountNumber: String(clientNumber),
-        month: String(month),
-        year: Number(year),
-      },
+      where,
     });
 
     if (filteredBills.length === 0) {
@@ -323,3 +323,17 @@ export const downloadEnergyBill = async (
     res.status(500).json({ error: "Error downloading the file" });
   }
 };
+
+function verifyParams(
+  clientNumber?: string | ParsedQs | string[] | ParsedQs[],
+  month?: string | ParsedQs | string[] | ParsedQs[],
+  year?: string | ParsedQs | string[] | ParsedQs[],
+  where: any = {}
+) {
+  if (clientNumber && typeof clientNumber === "string")
+    where.accountNumber = String(clientNumber);
+  if (month && typeof month === "string") where.month = String(month);
+  if (year && typeof year === "string") where.year = Number(year);
+
+  return where;
+}
