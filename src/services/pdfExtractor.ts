@@ -1,5 +1,31 @@
 import fs from "fs";
 import pdfParse from "pdf-parse";
+import {
+  ComprehendClient,
+  DetectEntitiesCommand,
+} from "@aws-sdk/client-comprehend";
+
+const comprehendClient = new ComprehendClient({ region: "us-east-2" });
+
+async function extractNameUsingComprehend(text: string): Promise<string> {
+  try {
+    const command = new DetectEntitiesCommand({
+      Text: text,
+      LanguageCode: "pt",
+    });
+    const response = await comprehendClient.send(command);
+
+    const names =
+      response.Entities?.filter((entity) => entity.Type === "PERSON").map(
+        (entity) => entity.Text
+      ) || [];
+
+    return String(names[0]);
+  } catch (err) {
+    console.error("Error with Comprehend:", err);
+    return "Error with Comprehend.";
+  }
+}
 
 export const extractDataFromPDF = async (pdfPath: string) => {
   try {
@@ -75,7 +101,7 @@ export const extractDataFromPDF = async (pdfPath: string) => {
       Number(publicLightingContribution)
     );
 
-    const ucName = getUCName(extractedText);
+    const ucName = await getUCName(extractedText);
     const distributor = getDistributorName(extractedText);
 
     return {
@@ -111,17 +137,28 @@ function removeGDOnValue(
   return Number(valueWithoutGD.toFixed(2));
 }
 
-function getUCName(extractedText: String) {
-  const lines = extractedText.split("\n");
-  const ucName = lines[37].trim();
+async function getUCName(extractedText: String) {
+  const regex = /Reservado ao Fisco[\s\S]*?NOTA FISCAL.*?\n/g;
+  const relevantPart = extractedText.match(regex);
+  let ucName;
+
+  ucName = await extractNameUsingComprehend(String(relevantPart));
+
+  if (ucName === "undefined") ucName = extractCompanyName(String(relevantPart));
 
   return ucName;
 }
+
 function getDistributorName(extractedText: string) {
-  const lines = extractedText.split("\n");
-  const distributorLine = lines[63].trim();
+  const regex = /\bCEMIG\b/g;
+  const distributor = extractedText.match(regex);
 
-  const distributor = distributorLine.split("CNPJ")[0].trim();
+  return distributor ? distributor[0] : null;
+}
 
-  return distributor;
+function extractCompanyName(relevantPart: string) {
+  const companyPattern = /(?:\n|^)[A-Z\s]+(?:LTDA|S\.A\.|ME|EPP)\b/g;
+  const ucName = String(relevantPart.match(companyPattern)).split("\n")[1];
+
+  return ucName;
 }

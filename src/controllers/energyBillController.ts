@@ -210,9 +210,9 @@ export const processEnergyBillPDF = async (
 
     const newEnergyBill = await prisma.energy_Bill.create({
       data: {
-        ucName: extractedData.ucName,
+        ucName: String(extractedData.ucName),
         installationNumber: Number(extractedData.installationNumber),
-        distributor: extractedData.distributor,
+        distributor: String(extractedData.distributor),
         accountNumber: extractedData.accountNumber,
         month,
         year: Number(extractedData.year),
