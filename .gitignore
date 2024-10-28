@@ -1,4 +1,6 @@
 .env
+.env.test
 node_modules
 migration.sql
 uploads
+files
